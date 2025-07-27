@@ -381,6 +381,7 @@
         </div>
     </div>
 
+
 <script>
   document.querySelectorAll('.openModal').forEach(button => {
     button.addEventListener('click', function () {

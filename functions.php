@@ -311,3 +311,20 @@ add_theme_support('post-thumbnails'); // Globally enables featured images
 add_theme_support('title-tag');
 add_theme_support('html5', array('search-form', 'comment-form', 'comment-list', 'gallery', 'caption'));
 add_theme_support('automatic-feed-links');
+
+
+function register_product_post_type() {
+    register_post_type('product', [
+        'labels' => [
+            'name' => 'Products',
+            'singular_name' => 'Product',
+        ],
+        'public' => true,
+        'has_archive' => true,
+        'rewrite' => ['slug' => 'products'], // This makes the URL /products/your-product
+        'supports' => ['title', 'editor', 'thumbnail', 'excerpt'],
+        'show_in_rest' => true,
+    ]);
+}
+add_action('init', 'register_product_post_type');
+
