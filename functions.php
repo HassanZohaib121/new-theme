@@ -126,8 +126,8 @@ function load_media_uploader_for_whatsapp($hook) {
 }
 add_action('admin_enqueue_scripts', 'load_media_uploader_for_whatsapp');
 
-get_template_part('template-parts/whatsapp-popup');
 
+get_template_part('template-parts/whatsapp-popup');
 
 add_theme_support('post-thumbnails'); // Globally enables featured images
 

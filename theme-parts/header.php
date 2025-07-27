@@ -30,12 +30,13 @@
       </nav>
 
       <!-- CTA Button -->
-      <button 
+      <!-- <button 
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[#ff6900] focus-visible:ring-[#ff6900]/50 focus-visible:ring-[3px] aria-invalid:ring-[#e7000b]/20 dark:aria-invalid:ring-[#e7000b]/40 aria-invalid:border-[#e7000b] text-white shadow-xs h-9 px-4 py-2 has-[>svg]:px-3 bg-orange-500 hover:bg-orange-700"
         type="button"
       >
         Get Quote
-      </button>
+      </button> -->
+      <?php include get_template_directory() . '/theme-parts/popup.php'; ?>
     </div>
   </div>
 </header>
