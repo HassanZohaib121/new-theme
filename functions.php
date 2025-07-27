@@ -126,6 +126,183 @@ function load_media_uploader_for_whatsapp($hook) {
 }
 add_action('admin_enqueue_scripts', 'load_media_uploader_for_whatsapp');
 
+add_action('admin_menu', 'custom_form_submission_menu');
+
+function custom_form_submission_menu() {
+    add_menu_page(
+        'Form Submition',         // Page title
+        'Form Submition',         // Menu title
+        'manage_options',         // Capability
+        'form-submition',         // Menu slug
+        'form_submission_dashboard', // Callback
+        'dashicons-feedback',     // Icon
+        25                        // Position
+    );
+
+    add_submenu_page(
+        'form-submition',
+        'Contact Submissions',
+        'Contact',
+        'manage_options',
+        'form-contact-submissions',
+        'render_contact_submissions'
+    );
+
+    add_submenu_page(
+        'form-submition',
+        'Quotation Submissions',
+        'Quotation',
+        'manage_options',
+        'form-quotation-submissions',
+        'render_quotation_submissions'
+    );
+}
+
+register_activation_hook(__FILE__, 'create_submission_tables');
+
+function form_submission_dashboard() {
+    echo '<div class="wrap">';
+    echo '<h1>Form Submission Dashboard</h1>';
+    echo '<p>Select a submenu from the left (Contact or Quotation).</p>';
+    echo '</div>';
+}
+
+function render_contact_submissions() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'form_contact';
+    $results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY submitted_at DESC");
+
+    echo '<div class="wrap"><h1>Contact Form Submissions</h1><table class="wp-list-table widefat fixed striped">';
+    echo '<thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+
+    if ($results) {
+        foreach ($results as $row) {
+            $delete_url = admin_url('admin.php?page=form-contact-submissions&delete_contact=' . $row->id);
+            echo "<tr>            
+                <td>{$row->name}</td>
+                <td>{$row->email}</td>
+                <td>{$row->subject}</td>
+                <td>{$row->message}</td>
+                <td>{$row->submitted_at}</td>
+                <td><a href='{$delete_url}' class='button-link-delete' onclick='return confirm(\"Are you sure you want to delete this entry?\")'>Delete</a></td>
+            </tr>";
+        }
+    } else {
+        echo '<tr><td colspan="6">No contact submissions found.</td></tr>';
+    }
+
+    echo '</tbody></table></div>';
+}
+
+function render_quotation_submissions() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'form_quotation';
+    $rows = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
+
+    echo '<div class="wrap"><h1>Quotation Submissions</h1>';
+    echo '<table class="wp-list-table widefat fixed striped">';
+    echo '<thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Product</th><th>Quantity</th><th>Message</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+
+    if ($rows) {
+        foreach ($rows as $row) {
+            $delete_url = admin_url('admin.php?page=form-quotation-submissions&delete_quotation=' . $row->id);
+            echo '<tr>';
+            echo '<td>' . esc_html($row->name) . '</td>';
+            echo '<td>' . esc_html($row->email) . '</td>';
+            echo '<td>' . esc_html($row->company) . '</td>';
+            echo '<td>' . esc_html($row->product_name) . '</td>';
+            echo '<td>' . esc_html($row->quantity) . '</td>';
+            echo '<td>' . esc_html($row->message) . '</td>';
+            echo '<td>' . esc_html($row->created_at) . '</td>';
+            echo "<td><a href='{$delete_url}' class='button-link-delete' onclick='return confirm(\"Are you sure you want to delete this entry?\")'>Delete</a></td>";
+            echo '</tr>';
+        }
+    } else {
+        echo '<tr><td colspan="8">No quotations found.</td></tr>';
+    }
+
+    echo '</tbody></table></div>';
+}
+
+// Handle delete requests
+function handle_form_deletion() {
+    global $wpdb;
+
+    if (isset($_GET['delete_contact']) && current_user_can('manage_options')) {
+        $id = intval($_GET['delete_contact']);
+        $wpdb->delete($wpdb->prefix . 'form_contact', ['id' => $id]);
+        wp_redirect(admin_url('admin.php?page=form-contact-submissions'));
+        exit;
+    }
+
+    if (isset($_GET['delete_quotation']) && current_user_can('manage_options')) {
+        $id = intval($_GET['delete_quotation']);
+        $wpdb->delete($wpdb->prefix . 'form_quotation', ['id' => $id]);
+        wp_redirect(admin_url('admin.php?page=form-quotation-submissions'));
+        exit;
+    }
+}
+add_action('admin_init', 'handle_form_deletion');
+
+add_action('admin_post_submit_contact_form', 'handle_contact_form_submission');
+add_action('admin_post_nopriv_submit_contact_form', 'handle_contact_form_submission');
+
+function handle_contact_form_submission() {
+    if (
+        !isset($_POST['name'], $_POST['email'], $_POST['message']) ||
+        !is_email($_POST['email'])
+    ) {
+        wp_die('Invalid form data');
+    }
+
+    global $wpdb;
+
+    $wpdb->insert(
+        $wpdb->prefix . 'form_contact',
+        [
+            'name'    => sanitize_text_field($_POST['name']),
+            'email'   => sanitize_email($_POST['email']),
+            'subject' => sanitize_text_field($_POST['subject']),
+            'message' => sanitize_textarea_field($_POST['message']),
+        ]
+    );
+
+    wp_redirect(home_url('/')); // Optional success page
+    exit;
+}
+
+function handle_quotation_form_submission() {
+    if (
+        $_SERVER['REQUEST_METHOD'] === 'POST' &&
+        isset($_POST['form_type']) &&
+        $_POST['form_type'] === 'quotation' &&
+        isset($_POST['submit_quote'])
+    ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'form_quotation';
+
+        $name         = sanitize_text_field($_POST['name']);
+        $email        = sanitize_email($_POST['email']);
+        $company      = sanitize_text_field($_POST['company']);
+        $quantity     = intval($_POST['quantity']);
+        $product_name = sanitize_text_field($_POST['product_name']);
+        $message      = sanitize_textarea_field($_POST['message']);
+
+        $wpdb->insert(
+            $table_name,
+            [
+                'name'         => $name,
+                'email'        => $email,
+                'company'      => $company,
+                'quantity'     => $quantity,
+                'product_name' => $product_name,
+                'message'      => $message,
+            ]
+        );
+    }
+}
+
+add_action('init', 'handle_quotation_form_submission');
 
 get_template_part('template-parts/whatsapp-popup');
 

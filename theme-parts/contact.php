@@ -1,4 +1,4 @@
- <div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 mb-6">
     <div class="text-center mb-16">
     <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Get in Touch</h2>
     <p class="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -48,7 +48,8 @@
         </div>
     </div>
     <div>
-        <form class="space-y-6">
+        <form class="space-y-6" method="POST" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <input type="hidden" name="action" value="submit_contact_form">
             <div class="grid md:grid-cols-2 gap-6">
                 <div>
                 <label htmlFor="name" class="block text-sm font-medium text-gray-700 mb-2">

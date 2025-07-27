@@ -160,7 +160,8 @@ include('theme-parts/header.php');
         </p>
 
         <!-- Form -->
-        <form method="post" action="" class="space-y-4">
+        <form method="POST" action="" class="space-y-4">
+          <input type="hidden" name="form_type" value="quotation" />
           <input type="hidden" id="product_name_input" name="product_name" />
             <div>
                 <label for="name" class="block text-sm font-medium">Name</label>

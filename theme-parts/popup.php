@@ -17,7 +17,8 @@
         </p>
 
         <!-- Form -->
-        <form method="post" action="" class="space-y-4">
+        <form method="POST" action="" class="space-y-4">
+            <input type="hidden" name="form_type" value="quotation" />
             <div>
                 <label for="name" class="block text-sm font-medium">Name</label>
                 <input type="text" id="name" name="name" required placeholder="Your name" class="w-full border p-2 rounded" />
