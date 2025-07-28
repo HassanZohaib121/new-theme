@@ -1,5 +1,5 @@
 <?php
-/* Template Name: Products Page */
+/* Template Name: Blog Page */
 include('theme-parts/head.php');
 include('theme-parts/header.php');
 $category = "All"; 
